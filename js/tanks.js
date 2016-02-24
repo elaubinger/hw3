@@ -89,7 +89,7 @@ function preload () {
     game.load.spritesheet('kaboom', 'assets/games/tanks/explosion.png', 64, 64, 23);
     
     game.load.audio('laser','assets/audio/SoundEffects/lazer.wav');
-    game.load.audio('music','assets/audio/bodenstaendig_2000_in_rock_4bit.ogg');
+    game.load.audio('boden', ['assets/audio/bodenstaendig_2000_in_rock_4bit.mp3', 'assets/audio/bodenstaendig_2000_in_rock_4bit.ogg']);
     
 }
 
@@ -202,7 +202,7 @@ function create () {
     cursors = game.input.keyboard.createCursorKeys();
     
     
-    music = game.add.audio('music');
+    music = game.add.audio('boden');
     laserfx = game.add.audio('laser');
     music.play();
 

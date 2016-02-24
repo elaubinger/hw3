@@ -12,9 +12,13 @@ EnemyTank = function (index, game, player, bullets) {
     this.nextFire = 0;
     this.alive = true;
 
-    this.shadow = game.add.sprite(x, y, 'enemy', 'shadow');
-    this.tank = game.add.sprite(x, y, 'enemy', 'tank1');
-    this.turret = game.add.sprite(x, y, 'enemy', 'turret');
+    this.shadow = game.add.sprite(x, y, 'shadow');
+    this.tank = game.add.sprite(x, y, 'tank1');
+    this.turret = game.add.sprite(x, y, 'turret');
+    
+    //this.shadow.scale.setTo(0.5, 0.5);
+    //this.tank.scale.setTo(0.5, 0.5);
+    //this.turret.scale.setTo(0.5, 0.5);
 
     this.shadow.anchor.set(0.5);
     this.tank.anchor.set(0.5);
@@ -22,7 +26,7 @@ EnemyTank = function (index, game, player, bullets) {
 
     this.tank.name = index.toString();
     game.physics.enable(this.tank, Phaser.Physics.ARCADE);
-    this.tank.body.immovable = false;
+    this.tank.body.immovable = true;
     this.tank.body.collideWorldBounds = true;
     this.tank.body.bounce.setTo(1, 1);
 
@@ -77,19 +81,37 @@ EnemyTank.prototype.update = function() {
 
 };
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game(1200, 800, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
 function preload () {
 
+    //deprecated
     game.load.atlas('tank', 'assets/games/tanks/tanks.png', 'assets/games/tanks/tanks.json');
     game.load.atlas('enemy', 'assets/games/tanks/enemy-tanks.png', 'assets/games/tanks/tanks.json');
-    game.load.image('logo', 'assets/games/tanks/logo.png');
-    game.load.image('bullet', 'assets/games/tanks/bullet.png');
-    game.load.image('earth', 'assets/games/tanks/scorched_earth.png');
-    game.load.spritesheet('kaboom', 'assets/games/tanks/explosion.png', 64, 64, 23);
     
-    game.load.audio('laser','assets/audio/SoundEffects/lazer.wav');
-    game.load.audio('boden', ['assets/audio/bodenstaendig_2000_in_rock_4bit.mp3', 'assets/audio/bodenstaendig_2000_in_rock_4bit.ogg']);
+    
+    game.load.image('tank1', 'assets/games/tanks/tank1.png');
+    game.load.image('tank2', 'assets/games/tanks/tank2.png');
+    game.load.image('tank3', 'assets/games/tanks/tank3.png');
+    game.load.image('shadow', 'assets/games/tanks/shadow.png');
+    game.load.image('turret', 'assets/games/tanks/turret.png');
+    game.load.image('turret1', 'assets/games/tanks/turret1.png');
+    game.load.image('logo', 'assets/games/tanks/logo.png');
+    game.load.image('lose', 'assets/games/tanks/lose.png');
+    game.load.image('win', 'assets/games/tanks/win.png');
+    game.load.image('bullet', 'assets/games/tanks/bullet.png');
+    game.load.image('bullet1', 'assets/games/tanks/bullet1.png');
+    game.load.image('earth', 'assets/games/tanks/scorched_earth.png');
+    
+    game.load.spritesheet('kaboom', 'assets/games/tanks/explosion.png', 128, 128, 12);
+    
+    game.load.audio('music', 'assets/audio/Lackluster_Lacuna.ogg');
+    game.load.audio('gameover', 'assets/audio/game-over.ogg');
+    game.load.audio('missioncomplete', 'assets/audio/Mission_Complete.ogg');
+    game.load.audio('fire', 'assets/audio/SoundEffects/blaster.ogg');
+    game.load.audio('hit', 'assets/audio/SoundEffects/lazer.ogg');
+    game.load.audio('explode', 'assets/audio/SoundEffects/alien_death1.ogg');
+    
     
 }
 
@@ -101,11 +123,13 @@ var turret;
 
 var enemies;
 var enemyBullets;
-var enemiesTotal = 0;
+var enemiesTotal = 10;
 var enemiesAlive = 0;
 var explosions;
 
 var logo;
+var winScreen;
+var loseScreen;
 
 var currentSpeed = 0;
 var cursors;
@@ -114,8 +138,17 @@ var bullets;
 var fireRate = 100;
 var nextFire = 0;
 
-var laser;
+var healthTotal = 5;
+var health = 5;
+
 var music;
+var missioncompletefx;
+var gameoverfx;
+var firefx;
+var hitfx;
+var explodefx;
+
+var firstGame = 'yes';
 
 function create () {
 
@@ -123,13 +156,13 @@ function create () {
     game.world.setBounds(-1000, -1000, 2000, 2000);
 
     //  Our tiled scrolling background
-    land = game.add.tileSprite(0, 0, 800, 600, 'earth');
+    land = game.add.tileSprite(0, 0, 1200, 800, 'earth');
     land.fixedToCamera = true;
 
     //  The base of our tank
-    tank = game.add.sprite(0, 0, 'tank', 'tank1');
+    tank = game.add.sprite(0, 0, 'tank2');
     tank.anchor.setTo(0.5, 0.5);
-    tank.animations.add('move', ['tank1', 'tank2', 'tank3', 'tank4', 'tank5', 'tank6'], 20, true);
+    //tank.animations.add('move', ['tank1', 'tank2', 'tank3', 'tank4', 'tank5', 'tank6'], 20, true);
 
     //  This will force it to decelerate and limit its speed
     game.physics.enable(tank, Phaser.Physics.ARCADE);
@@ -138,25 +171,27 @@ function create () {
     tank.body.collideWorldBounds = true;
 
     //  Finally the turret that we place on-top of the tank body
-    turret = game.add.sprite(0, 0, 'tank', 'turret');
+    turret = game.add.sprite(0, 0, 'turret1');
     turret.anchor.setTo(0.3, 0.5);
 
     //  The enemies bullet group
     enemyBullets = game.add.group();
     enemyBullets.enableBody = true;
     enemyBullets.physicsBodyType = Phaser.Physics.ARCADE;
-    enemyBullets.createMultiple(100, 'bullet');
+    enemyBullets.createMultiple(100, 'bullet1');
     
     enemyBullets.setAll('anchor.x', 0.5);
     enemyBullets.setAll('anchor.y', 0.5);
     enemyBullets.setAll('outOfBoundsKill', true);
     enemyBullets.setAll('checkWorldBounds', true);
 
+    health = healthTotal;
+    
     //  Create some baddies to waste :)
     enemies = [];
 
-    enemiesTotal = 20;
-    enemiesAlive = 20;
+    enemiesTotal += 5;
+    enemiesAlive = enemiesTotal;
 
     for (var i = 0; i < enemiesTotal; i++)
     {
@@ -164,7 +199,7 @@ function create () {
     }
 
     //  A shadow below our tank
-    shadow = game.add.sprite(0, 0, 'tank', 'shadow');
+    shadow = game.add.sprite(0, 0, 'shadow');
     shadow.anchor.setTo(0.5, 0.5);
 
     //  Our bullet group
@@ -190,22 +225,55 @@ function create () {
     tank.bringToTop();
     turret.bringToTop();
 
-    logo = game.add.sprite(0, 200, 'logo');
-    logo.fixedToCamera = true;
+    if(firstGame == 'yes'){
+        logo = game.add.sprite(200, 200, 'logo');
+        logo.fixedToCamera = true;
 
-    game.input.onDown.add(removeLogo, this);
+        game.input.onDown.add(removeLogo, this);
+    }
+    if(firstGame == 'win'){
+        winScreen = game.add.sprite(200, 200, 'win');
+        winScreen.fixedToCamera = true;
 
+        game.input.onDown.add(removeWin, this);
+    }
+    if(firstGame == 'lose'){
+        loseScreen = game.add.sprite(200, 200, 'lose');
+        loseScreen.fixedToCamera = true;
+
+        game.input.onDown.add(removeLose, this);
+    }
+        
     game.camera.follow(tank);
-    game.camera.deadzone = new Phaser.Rectangle(150, 150, 500, 300);
+    //game.camera.deadzone = new Phaser.Rectangle(150, 150, 300, 200);
     game.camera.focusOnXY(0, 0);
+    //game.camera.width = 10000;
+    //game.camera.height = 10000;
 
     cursors = game.input.keyboard.createCursorKeys();
+    if(music != null){
+        music.stop();
+    }
+    music = game.add.audio('music');
+    gameoverfx = game.add.audio('gameover');
+    missioncompletefx = game.add.audio('missioncomplete');
+    firefx = game.add.audio('fire');
+    hitfx = game.add.audio('hit');
+    explodefx = game.add.audio('explode');
     
-    
-    music = game.add.audio('boden');
-    laserfx = game.add.audio('laser');
     music.play();
+    music.volume -= 0.5;
+    
+    game.paused = true;
+    game.input.onDown.add(unpause, self);
 
+}
+
+function unpause(event){
+        // Only act if paused
+        if(game.paused){
+            game.paused = false;
+        }
 }
 
 function removeLogo () {
@@ -215,10 +283,50 @@ function removeLogo () {
 
 }
 
+function removeWin () {
+
+    game.input.onDown.remove(removeWin, this);
+    winScreen.kill();
+
+}
+
+function removeLose () {
+
+    game.input.onDown.remove(removeLose, this);
+    loseScreen.kill();
+
+}
+
+
+function enemyCollide () {
+    
+    health -= 5;
+    
+    if(health <= 0){
+        
+        lose();
+    }
+}
+
+function lose() {
+    music.stop();
+    //gameoverfx.play();
+    enemiesTotal = 10;
+    firstGame = 'lose';
+    create();
+}
+
+function win() {
+    music.stop();
+    //missioncompletefx.play();
+    firstGame = 'win';
+    create();
+}
+
 function update () {
 
     game.physics.arcade.overlap(enemyBullets, tank, bulletHitPlayer, null, this);
-
+    
     enemiesAlive = 0;
 
     for (var i = 0; i < enemies.length; i++)
@@ -226,12 +334,16 @@ function update () {
         if (enemies[i].alive)
         {
             enemiesAlive++;
-            game.physics.arcade.collide(tank, enemies[i].tank);
+            game.physics.arcade.collide(tank, enemies[i].tank, enemyCollide);
             game.physics.arcade.overlap(bullets, enemies[i].tank, bulletHitEnemy, null, this);
             enemies[i].update();
         }
     }
 
+    if(enemiesAlive <= 0){
+        win();
+    }
+    
     if (cursors.left.isDown)
     {
         tank.angle -= 4;
@@ -244,13 +356,13 @@ function update () {
     if (cursors.up.isDown)
     {
         //  The speed we'll travel at
-        currentSpeed = 300;
+        currentSpeed = 600;
     }
     else
     {
         if (currentSpeed > 0)
         {
-            currentSpeed -= 4;
+            currentSpeed -= 8;
         }
     }
 
@@ -283,6 +395,11 @@ function update () {
 function bulletHitPlayer (tank, bullet) {
 
     bullet.kill();
+    health -= 1;
+    
+    if(health <= 0){
+        lose();
+    }
 
 }
 
@@ -296,7 +413,13 @@ function bulletHitEnemy (tank, bullet) {
     {
         var explosionAnimation = explosions.getFirstExists(false);
         explosionAnimation.reset(tank.x, tank.y);
-        explosionAnimation.play('kaboom', 30, false, true);
+        //explosionAnimation.speed = 1;
+        explosionAnimation.play('kaboom', 13, false, true);
+        explodefx.play();
+    }
+    else{
+        hitfx.play();
+        //tank.tint = 0xffffff;
     }
 
 }
@@ -311,9 +434,9 @@ function fire () {
 
         bullet.reset(turret.x, turret.y);
 
-        bullet.rotation = game.physics.arcade.moveToPointer(bullet, 1000, game.input.activePointer, 500);
+        bullet.rotation = game.physics.arcade.moveToPointer(bullet, 2000, game.input.activePointer);
         
-        laserfx.play();
+        firefx.play();
     }
 
 }
@@ -322,6 +445,7 @@ function render () {
 
     // game.debug.text('Active Bullets: ' + bullets.countLiving() + ' / ' + bullets.length, 32, 32);
     game.debug.text('Enemies: ' + enemiesAlive + ' / ' + enemiesTotal, 32, 32);
+    game.debug.text('Health: ' + health + ' / ' + healthTotal, 32, 48);
 
 }
 

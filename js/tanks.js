@@ -88,6 +88,9 @@ function preload () {
     game.load.image('earth', 'assets/games/tanks/scorched_earth.png');
     game.load.spritesheet('kaboom', 'assets/games/tanks/explosion.png', 64, 64, 23);
     
+    game.load.audio('laser','assets/audio/SoundEffects/lazer.wav');
+    game.load.audio('music','assets/audio/bodenstaendig_2000_in_rock_4bit.ogg');
+    
 }
 
 var land;
@@ -110,6 +113,9 @@ var cursors;
 var bullets;
 var fireRate = 100;
 var nextFire = 0;
+
+var laser;
+var music;
 
 function create () {
 
@@ -194,6 +200,11 @@ function create () {
     game.camera.focusOnXY(0, 0);
 
     cursors = game.input.keyboard.createCursorKeys();
+    
+    
+    music = game.add.audio('music');
+    laserfx = game.add.audio('laser');
+    music.play();
 
 }
 
@@ -301,6 +312,8 @@ function fire () {
         bullet.reset(turret.x, turret.y);
 
         bullet.rotation = game.physics.arcade.moveToPointer(bullet, 1000, game.input.activePointer, 500);
+        
+        laserfx.play();
     }
 
 }

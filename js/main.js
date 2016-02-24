@@ -353,18 +353,18 @@ function update () {
         tank.angle += 4;
     }
 
-    if (cursors.up.isDown)
-    {
+    //if (cursors.up.isDown)
+    //{
         //  The speed we'll travel at
-        currentSpeed = 600;
-    }
-    else
-    {
-        if (currentSpeed > 0)
-        {
-            currentSpeed -= 8;
-        }
-    }
+        currentSpeed = 900;
+    //}
+    //else
+    //{
+        //if (currentSpeed > 0)
+        //{
+            //currentSpeed -= 8;
+        //}
+    //}
 
     if (currentSpeed > 0)
     {

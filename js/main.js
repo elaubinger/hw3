@@ -105,12 +105,12 @@ function preload () {
     
     game.load.spritesheet('kaboom', 'assets/games/tanks/explosion.png', 128, 128, 12);
     
-    game.load.audio('music', 'assets/audio/Lackluster_Lacuna.ogg');
+    game.load.audio('music', 'assets/audio/soundtrack.ogg');
     game.load.audio('gameover', 'assets/audio/game-over.ogg');
     game.load.audio('missioncomplete', 'assets/audio/Mission_Complete.ogg');
-    game.load.audio('fire', 'assets/audio/SoundEffects/blaster.ogg');
-    game.load.audio('hit', 'assets/audio/SoundEffects/lazer.ogg');
-    game.load.audio('explode', 'assets/audio/SoundEffects/alien_death1.ogg');
+    game.load.audio('fire', 'assets/audio/smgshoot.ogg');
+    game.load.audio('hit', 'assets/audio/impact.ogg');
+    game.load.audio('explode', 'assets/audio/explode.ogg');
     
     
 }
@@ -123,7 +123,7 @@ var turret;
 
 var enemies;
 var enemyBullets;
-var enemiesTotal = 10;
+var enemiesTotal = 5;
 var enemiesAlive = 0;
 var explosions;
 
@@ -147,6 +147,8 @@ var gameoverfx;
 var firefx;
 var hitfx;
 var explodefx;
+
+var level = 1;
 
 var firstGame = 'yes';
 
@@ -226,19 +228,19 @@ function create () {
     turret.bringToTop();
 
     if(firstGame == 'yes'){
-        logo = game.add.sprite(200, 200, 'logo');
+        logo = game.add.sprite(0, 0, 'logo');
         logo.fixedToCamera = true;
 
         game.input.onDown.add(removeLogo, this);
     }
     if(firstGame == 'win'){
-        winScreen = game.add.sprite(200, 200, 'win');
+        winScreen = game.add.sprite(0, 0, 'win');
         winScreen.fixedToCamera = true;
 
         game.input.onDown.add(removeWin, this);
     }
     if(firstGame == 'lose'){
-        loseScreen = game.add.sprite(200, 200, 'lose');
+        loseScreen = game.add.sprite(0, 0, 'lose');
         loseScreen.fixedToCamera = true;
 
         game.input.onDown.add(removeLose, this);
@@ -255,14 +257,19 @@ function create () {
         music.stop();
     }
     music = game.add.audio('music');
+    music.volume = 4.0;
     gameoverfx = game.add.audio('gameover');
     missioncompletefx = game.add.audio('missioncomplete');
     firefx = game.add.audio('fire');
+    firefx.volume = 0.5;
     hitfx = game.add.audio('hit');
     explodefx = game.add.audio('explode');
     
+    game.sound.volume = 0.5;
+    
     music.play();
-    music.volume -= 0.5;
+    music.loop = true;
+    //music.volume -= 0.5;
     
     game.paused = true;
     game.input.onDown.add(unpause, self);
@@ -311,8 +318,9 @@ function enemyCollide () {
 function lose() {
     music.stop();
     //gameoverfx.play();
-    enemiesTotal = 10;
+    enemiesTotal = 5;
     firstGame = 'lose';
+    level = 1;
     create();
 }
 
@@ -320,6 +328,7 @@ function win() {
     music.stop();
     //missioncompletefx.play();
     firstGame = 'win';
+    level++;
     create();
 }
 
@@ -334,7 +343,7 @@ function update () {
         if (enemies[i].alive)
         {
             enemiesAlive++;
-            game.physics.arcade.collide(tank, enemies[i].tank, enemyCollide);
+            //game.physics.arcade.collide(tank, enemies[i].tank, enemyCollide);
             game.physics.arcade.overlap(bullets, enemies[i].tank, bulletHitEnemy, null, this);
             enemies[i].update();
         }
@@ -437,6 +446,7 @@ function fire () {
         bullet.rotation = game.physics.arcade.moveToPointer(bullet, 2000, game.input.activePointer);
         
         firefx.play();
+        
     }
 
 }
@@ -446,6 +456,7 @@ function render () {
     // game.debug.text('Active Bullets: ' + bullets.countLiving() + ' / ' + bullets.length, 32, 32);
     game.debug.text('Enemies: ' + enemiesAlive + ' / ' + enemiesTotal, 32, 32);
     game.debug.text('Health: ' + health + ' / ' + healthTotal, 32, 48);
+    game.debug.text('Level: ' + level, 32, 64);
 
 }
 

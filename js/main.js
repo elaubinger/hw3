@@ -405,6 +405,8 @@ function bulletHitPlayer (tank, bullet) {
 
     bullet.kill();
     health -= 1;
+    tank.tint = (0xff0000 + (0xffffff * 0.5));
+    game.time.events.add(Phaser.Timer.SECOND * 0.1, function() { blink(tank); }, this);
     
     if(health <= 0){
         lose();
@@ -428,9 +430,14 @@ function bulletHitEnemy (tank, bullet) {
     }
     else{
         hitfx.play();
-        //tank.tint = 0xffffff;
+        tank.tint = (0xff0000 + (0xffffff * 0.5));
+        game.time.events.add(Phaser.Timer.SECOND * 0.1, function() { blink(tank); }, this);
     }
 
+}
+
+function blink (sprite) {
+    sprite.tint = 0xffffff;
 }
 
 function fire () {

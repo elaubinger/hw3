@@ -107,6 +107,7 @@ function preload () {
     
     game.load.spritesheet('kaboom', 'assets/games/tanks/explosion.png', 128, 128, 12);
     game.load.spritesheet('explosionanim', 'assets/games/tanks/explosionanim.png', 35, 43, 15);
+    game.load.spritesheet('smokeanim', 'assets/games/tanks/smokeanim.png', 32, 45, 27);
     
     game.load.audio('music', 'assets/audio/soundtrack.ogg');
     game.load.audio('gameover', 'assets/audio/game-over.ogg');
@@ -415,9 +416,14 @@ function bulletHitPlayer (tank, bullet) {
     tank.tint = (0xff0000 + (0xffffff * 0.5));
     game.time.events.add(Phaser.Timer.SECOND * 0.1, function() { blink(tank); }, this);
     
-    explosionAnim = game.add.sprite(bullet.x, bullet.y, 'explosionanim', 5);
+    explosionAnim = game.add.sprite( (bullet.x + tank.x)/2,
+                                     (bullet.y + tank.y)/2,
+                                     'explosionanim',
+                                     5);
     explosionAnim.anchor.setTo(0.5, 0.5);
     explosionAnim.smoothed = false;
+    explosionAnim.scale.x = 2.0;
+    explosionAnim.scale.y = 2.0;
     anim = explosionAnim.animations.add('explode');
     anim.play(20, true);
     anim.loop = false;
@@ -434,9 +440,15 @@ function bulletHitEnemy (tank, bullet) {
 
     var destroyed = enemies[tank.name].damage();
     
-    explosionAnim = game.add.sprite(bullet.x, bullet.y, 'explosionanim', 5);
+    explosionAnim = game.add.sprite( (bullet.x + tank.x)/2,
+                                     (bullet.y + tank.y)/2,
+                                     'explosionanim',
+                                     5);
     explosionAnim.anchor.setTo(0.5, 0.5);
     explosionAnim.smoothed = false;
+    scale = game.rnd.integerInRange(1, 3);
+    explosionAnim.scale.x = scale;
+    explosionAnim.scale.y = scale;
     anim = explosionAnim.animations.add('explode');
     anim.play(20, true);
     anim.loop = false;
@@ -475,6 +487,19 @@ function fire () {
         bullet.rotation = game.physics.arcade.moveToPointer(bullet, 2000, game.input.activePointer);
         
         firefx.play();
+        
+        smokeAnim = game.add.sprite( 
+                                     bullet.x,
+                                     bullet.y,
+                                     'smokeanim',
+                                     5);
+        smokeAnim.anchor.setTo(0.5, 0.5);
+        smokeAnim.smoothed = false;
+        smokeAnim.scale.x = 1.8;
+        smokeAnim.scale.y = 1.8;
+        anim = smokeAnim.animations.add('explode');
+        anim.play(100, true);
+        anim.loop = false;
         
     }
 

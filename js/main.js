@@ -83,7 +83,7 @@ EnemyTank.prototype.update = function() {
 
 };
 
-var game = new Phaser.Game(1200, 800, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game(1200, 800, Phaser.AUTO, 'game', { preload: preload, create: create, update: update, render: render });
 
 function preload () {
 
@@ -160,6 +160,8 @@ var firstGame = 'yes';
 
 function create () {
 
+    game.renderer.renderSession.roundPixels = true;
+    
     //  Resize our game world to be a 2000 x 2000 square
     game.world.setBounds(-1000, -1000, 2000, 2000);
 
@@ -273,7 +275,7 @@ function create () {
     hitfx = game.add.audio('hit');
     explodefx = game.add.audio('explode');
     
-    game.sound.volume = 0.5;
+    game.sound.volume = 0.3;
     
     music.play();
     music.loop = true;
@@ -495,8 +497,9 @@ function fire () {
                                      5);
         smokeAnim.anchor.setTo(0.5, 0.5);
         smokeAnim.smoothed = false;
-        smokeAnim.scale.x = 1.8;
-        smokeAnim.scale.y = 1.8;
+        scale = (game.rnd.integerInRange(2, 4))/2;
+        smokeAnim.scale.x = scale;
+        smokeAnim.scale.y = scale;
         anim = smokeAnim.animations.add('explode');
         anim.play(100, true);
         anim.loop = false;

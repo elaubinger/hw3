@@ -65,7 +65,7 @@ EnemyTank.prototype.update = function() {
     this.turret.y = this.tank.y;
     this.turret.rotation = this.game.physics.arcade.angleBetween(this.tank, this.player);
 
-    if (this.game.physics.arcade.distanceBetween(this.tank, this.player) < 300)
+    if (this.game.physics.arcade.distanceBetween(this.tank, this.player) < 500)
     {
         if (this.game.time.now > this.nextFire && this.bullets.countDead() > 0)
         {
@@ -76,6 +76,8 @@ EnemyTank.prototype.update = function() {
             bullet.reset(this.turret.x, this.turret.y);
 
             bullet.rotation = this.game.physics.arcade.moveToObject(bullet, this.player, 500);
+            
+            enemyfirefx.play();
         }
     }
 
@@ -104,11 +106,13 @@ function preload () {
     game.load.image('earth', 'assets/games/tanks/scorched_earth.png');
     
     game.load.spritesheet('kaboom', 'assets/games/tanks/explosion.png', 128, 128, 12);
+    game.load.spritesheet('explosionanim', 'assets/games/tanks/explosionanim.png', 35, 43, 15);
     
     game.load.audio('music', 'assets/audio/soundtrack.ogg');
     game.load.audio('gameover', 'assets/audio/game-over.ogg');
     game.load.audio('missioncomplete', 'assets/audio/Mission_Complete.ogg');
     game.load.audio('fire', 'assets/audio/smgshoot.ogg');
+    game.load.audio('enemyfire', 'assets/audio/semishoot.ogg');
     game.load.audio('hit', 'assets/audio/impact.ogg');
     game.load.audio('explode', 'assets/audio/explode.ogg');
     
@@ -145,6 +149,7 @@ var music;
 var missioncompletefx;
 var gameoverfx;
 var firefx;
+var enemyfirefx;
 var hitfx;
 var explodefx;
 
@@ -262,6 +267,8 @@ function create () {
     missioncompletefx = game.add.audio('missioncomplete');
     firefx = game.add.audio('fire');
     firefx.volume = 0.5;
+    enemyfirefx = game.add.audio('enemyfire');
+    enemyfirefx.volume = 0.5;
     hitfx = game.add.audio('hit');
     explodefx = game.add.audio('explode');
     
@@ -364,8 +371,8 @@ function update () {
 
     //if (cursors.up.isDown)
     //{
-        //  The speed we'll travel at
-        currentSpeed = 900;
+        // The speed we'll travel at
+        currentSpeed = 2000;
     //}
     //else
     //{
@@ -408,6 +415,13 @@ function bulletHitPlayer (tank, bullet) {
     tank.tint = (0xff0000 + (0xffffff * 0.5));
     game.time.events.add(Phaser.Timer.SECOND * 0.1, function() { blink(tank); }, this);
     
+    explosionAnim = game.add.sprite(bullet.x, bullet.y, 'explosionanim', 5);
+    explosionAnim.anchor.setTo(0.5, 0.5);
+    explosionAnim.smoothed = false;
+    anim = explosionAnim.animations.add('explode');
+    anim.play(20, true);
+    anim.loop = false;
+    
     if(health <= 0){
         lose();
     }
@@ -419,6 +433,14 @@ function bulletHitEnemy (tank, bullet) {
     bullet.kill();
 
     var destroyed = enemies[tank.name].damage();
+    
+    explosionAnim = game.add.sprite(bullet.x, bullet.y, 'explosionanim', 5);
+    explosionAnim.anchor.setTo(0.5, 0.5);
+    explosionAnim.smoothed = false;
+    anim = explosionAnim.animations.add('explode');
+    anim.play(20, true);
+    anim.loop = false;
+    //explosionAnim.play();
 
     if (destroyed)
     {
